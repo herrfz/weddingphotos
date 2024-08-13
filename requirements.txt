@@ -1,2 +1,4 @@
 python-fasthtml>=0.3.4
 qrcode>=7.4.2
+flask
+gunicorn
