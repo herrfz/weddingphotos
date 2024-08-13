@@ -1,15 +1,25 @@
+from fasthtml import FastHTML
 from fasthtml.common import *
 
 
-app, rt = fast_app()
+app = FastHTML()
 
+count = 0
 
-@rt('/')
-def get(): return Div(P('Hello World!'), hx_get=('/change'))
+@app.get("/")
+def home():
+    return Title("Count Demo"), Main(
+        H1("Count Demo"),
+        P(f"Count is set to {count}", id="count"),
+        Button("Increment", hx_post="/increment", hx_target="#count", hx_swap="innerHTML")
+    )
 
-
-@rt('/change')
-def get(): return P('Nice to be here!')
+@app.post("/increment")
+def increment():
+    print("incrementing")
+    global count
+    count += 1
+    return f"Count is set to {count}"
 
 
 serve()
