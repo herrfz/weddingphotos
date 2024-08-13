@@ -6,16 +6,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Upload</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function handleFileSelect(event) {
+            const fileInput = document.getElementById('fileInput');
+            fileInput.click();
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/gallery';
+                    } else {
+                        alert('File upload failed.');
+                    }
+                })
+                .catch(error => {
+                    alert('Error:', error);
+                });
+        }
+
+        function setupFileInput() {
+            const fileInput = document.getElementById('fileInput');
+            fileInput.addEventListener('change', uploadFile);
+        }
+
+        document.addEventListener('DOMContentLoaded', setupFileInput);
+    </script>
 </head>
 
 <body>
     <div class="container">
         <h1>Upload a Photo</h1>
-        <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
-            <input type="file" name="file" accept="image/*" capture="camera">
-            <button type="submit">Upload</button>
-        </form>
-        <a href="{{ url_for('gallery') }}" class="gallery-link">View Gallery</a>
+        <button onclick="handleFileSelect()">Take a Photo or Select from Gallery</button>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;" capture="camera">
     </div>
 </body>
 
