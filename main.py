@@ -1,99 +1,41 @@
-from flask import Flask
+from flask import Flask, render_template, request, redirect, url_for
+import os
+
 app = Flask(__name__)
+UPLOAD_FOLDER = 'static/uploads/'
 
-@app.route("/")
-def hello():
-    return """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Upload</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f8f9fa;
-        }
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-        .container {
-            text-align: center;
-            background-color: #fff;
-            padding: 30px 50px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-        h1 {
-            font-size: 26px;
-            color: #343a40;
-            margin-bottom: 30px;
-        }
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-        .button {
-            display: inline-block;
-            margin: 15px 0;
-            padding: 15px 30px;
-            font-size: 18px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            text-decoration: none;
-            width: 100%;
-            max-width: 300px;
-        }
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return redirect(request.url)
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return redirect(request.url)
+    
+    if file:
+        filename = file.filename
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        return redirect(url_for('gallery'))
 
-        .button:hover {
-            background-color: #0056b3;
-            transform: translateY(-3px);
-        }
+@app.route('/gallery')
+def gallery():
+    images = os.listdir(app.config['UPLOAD_FOLDER'])
+    images = [os.path.join(app.config['UPLOAD_FOLDER'], img) for img in images]
+    return render_template('gallery.html', images=images)
 
-        .button:active {
-            transform: translateY(1px);
-        }
+if __name__ == '__main__':
+    app.run(debug=True)
 
-        .button + .button {
-            margin-top: 10px;
-        }
-
-        .button-icon {
-            margin-right: 8px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Your task is: </h1>
-
-        <!-- Button to open the gallery (mobile) or file picker (laptop) -->
-        <button class="button" id="choose-photo-button">
-            <span class="button-icon">📷</span> Take a Photo or Choose from Gallery
-        </button>
-        <input type="file" id="gallery-input" accept="image/*" style="display:none;" />
-    </div>
-
-    <script>
-        document.getElementById('choose-photo-button').addEventListener('click', function() {
-            document.getElementById('gallery-input').click();
-        });
-
-        document.getElementById('gallery-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                alert(`Photo selected: ${file.name}`);
-            }
-        });
-    </script>
-</body>
-</html>
-"""
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0')
