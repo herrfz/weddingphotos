@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Photo Uploaded</h1>
+        <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Photo"
+            style="width: 100%; max-width: 600px;">
+        <a href="{{ url_for('gallery') }}" class="gallery-link">View Gallery</a>
+    </div>
+</body>
+
+</html>

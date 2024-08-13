@@ -21,12 +21,11 @@
                 method: 'POST',
                 body: formData
             })
-                .then(response => {
-                    if (response.ok) {
-                        window.location.href = '/gallery';
-                    } else {
-                        alert('File upload failed.');
-                    }
+                .then(response => response.text())
+                .then(html => {
+                    document.open();
+                    document.write(html);
+                    document.close();
                 })
                 .catch(error => {
                     alert('Error:', error);

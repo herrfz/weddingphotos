@@ -70,3 +70,8 @@ button:hover {
 .back-link:hover {
     text-decoration: underline;
 }
+
+.alert {
+    color: red;
+    font-weight: bold;
+}
