@@ -70,42 +70,24 @@ def hello():
 </head>
 <body>
     <div class="container">
-        <h1>Upload or Take a Photo</h1>
-
-        <!-- Button to open the camera on mobile or webcam on laptop -->
-        <button class="button" id="take-photo-button">
-            <span class="button-icon">📷</span> Take a Photo
-        </button>
-        <input type="file" id="camera-input" accept="image/*" capture="camera" style="display:none;" />
+        <h1>Your task is: </h1>
 
         <!-- Button to open the gallery (mobile) or file picker (laptop) -->
         <button class="button" id="choose-photo-button">
-            <span class="button-icon">🖼️</span> Choose from Gallery
+            <span class="button-icon">📷</span> Take a Photo or Choose from Gallery
         </button>
         <input type="file" id="gallery-input" accept="image/*" style="display:none;" />
     </div>
 
     <script>
-        document.getElementById('take-photo-button').addEventListener('click', function() {
-            document.getElementById('camera-input').click();
-        });
-
         document.getElementById('choose-photo-button').addEventListener('click', function() {
             document.getElementById('gallery-input').click();
-        });
-
-        // Handle file input change (for demo purposes)
-        document.getElementById('camera-input').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                alert(`Camera Photo selected: ${file.name}`);
-            }
         });
 
         document.getElementById('gallery-input').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
-                alert(`Gallery Photo selected: ${file.name}`);
+                alert(`Photo selected: ${file.name}`);
             }
         });
     </script>
