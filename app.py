@@ -20,6 +20,8 @@ def index():
             return redirect(request.url)
         if file:
             filename = secure_filename(file.filename)
+            if not os.path.exists(app.config['UPLOAD_FOLDER']):
+                os.mkdir(app.config['UPLOAD_FOLDER'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return render_template('uploaded.html', filename=filename)
     return render_template('index.html')
