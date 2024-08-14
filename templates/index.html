@@ -4,48 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Upload</title>
+    <title>Upload Photo</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script>
-        function handleFileSelect(event) {
-            const fileInput = document.getElementById('fileInput');
-            fileInput.click();
-        }
-
-        function uploadFile() {
-            const fileInput = document.getElementById('fileInput');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.text())
-                .then(html => {
-                    document.open();
-                    document.write(html);
-                    document.close();
-                })
-                .catch(error => {
-                    alert('Error:', error);
-                });
-        }
-
-        function setupFileInput() {
-            const fileInput = document.getElementById('fileInput');
-            fileInput.addEventListener('change', uploadFile);
-        }
-
-        document.addEventListener('DOMContentLoaded', setupFileInput);
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="container">
-        <h1>Upload a Photo</h1>
-        <button onclick="handleFileSelect()">Take a Photo or Select from Gallery</button>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;" capture="camera">
+        <div class="upload-card">
+            <h1>Upload Your Photo</h1>
+            <p>Select a photo to upload from your gallery or take a new one.</p>
+            <form method="POST" enctype="multipart/form-data">
+                <label for="file-upload" class="custom-file-upload">
+                    Upload Photo
+                </label>
+                <input id="file-upload" type="file" name="file" accept="image/*" capture="environment"
+                    onchange="this.form.submit();">
+            </form>
+        </div>
     </div>
 </body>
 

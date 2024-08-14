@@ -3,67 +3,52 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Change this to a random secret key for security
+app.secret_key = 'your_secret_key'
+app.config['UPLOAD_FOLDER'] = 'static/images'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
+PASSWORD = 'gallerypassword'  # Set your gallery password here
 
-# Configurations
-app.config['UPLOAD_FOLDER'] = 'static/uploads/'
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-app.config['PASSWORD'] = 'your_password'  # Set a password for the gallery
-
-# Ensure the upload folder exists
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return render_template('uploaded.html', filename=filename)
     return render_template('index.html')
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return redirect(request.url)
-    
-    file = request.files['file']
-
-    if file.filename == '':
-        return redirect(request.url)
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # Pass filename to the result page
-        return render_template('result.html', filename=filename)
-
-    return redirect(request.url)
 
 @app.route('/gallery', methods=['GET', 'POST'])
 def gallery():
     if request.method == 'POST':
-        password = request.form['password']
-        if password == app.config['PASSWORD']:
+        password = request.form.get('password')
+        if password == PASSWORD:
             session['authenticated'] = True
-            return redirect(url_for('show_gallery'))
         else:
-            flash('Incorrect password. Please try again.')
-    
-    return render_template('password.html')
+            flash('Incorrect password')
+            return redirect(url_for('login'))
 
-@app.route('/show_gallery')
-def show_gallery():
-    if not session.get('authenticated'):
-        return redirect(url_for('gallery'))
-    
+    if 'authenticated' not in session:
+        return redirect(url_for('login'))
+
     images = os.listdir(app.config['UPLOAD_FOLDER'])
-    image_urls = [os.path.join('uploads/', img) for img in images]
-    return render_template('gallery.html', images=image_urls)
+    images = ['images/' + image for image in images]
+    return render_template('gallery.html', images=images)
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
 
 @app.route('/logout')
 def logout():
     session.pop('authenticated', None)
-    return redirect(url_for('gallery'))
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)

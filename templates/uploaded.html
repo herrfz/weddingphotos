@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Uploaded</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <div class="upload-card">
+            <h1>Photo Uploaded Successfully</h1>
+            <img src="{{ url_for('static', filename=filename) }}" class="uploaded-image">
+            <a href="{{ url_for('gallery') }}" class="gallery-link">View Gallery</a>
+            <a href="{{ url_for('index') }}" class="back-link">Upload Another Photo</a>
+        </div>
+    </div>
+</body>
+
+</html>
