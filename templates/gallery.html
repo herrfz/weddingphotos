@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div class="gallery-container">
+    <div class="gallery-container" onmouseover="showControls()" onmouseout="hideControls()">
         <div class="slideshow-container">
             {% for file in files %}
             <div class="slide fade">
@@ -64,7 +64,21 @@
             }
             slides[slideIndex - 1].style.display = "block";
             dots[slideIndex - 1].className += " active";
-            setTimeout(showSlides, 5000); // Change image every 5 seconds
+            setTimeout(showSlides, 7000); // Change image every 7 seconds
+        }
+
+        function showControls() {
+            let controls = document.querySelectorAll('.prev, .next, .dot');
+            controls.forEach(control => {
+                control.style.opacity = "1";
+            });
+        }
+
+        function hideControls() {
+            let controls = document.querySelectorAll('.prev, .next, .dot');
+            controls.forEach(control => {
+                control.style.opacity = "0";
+            });
         }
 
         document.addEventListener('keydown', function (event) {
