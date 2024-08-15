@@ -9,15 +9,15 @@
 </head>
 
 <body>
-    <div class="gallery-container">
+    <div class="full-page-container gallery-container">
         <div class="swipe" id="swipeArea"></div>
 
         {% for file in files %}
         <div class="media-item {% if loop.index == 1 %}active{% endif %}">
             {% if file.split('.')[-1] in ['png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'] %}
-            <img src="{{ url_for('uploaded_file', filename=file) }}" alt="image">
+            <img src="{{ url_for('uploaded_file', filename=file) }}" alt="image" class="media-item">
             {% elif file.split('.')[-1] in ['mp4', 'mov', 'avi'] %}
-            <video controls>
+            <video controls class="media-item">
                 <source src="{{ url_for('uploaded_file', filename=file) }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>

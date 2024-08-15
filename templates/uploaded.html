@@ -4,25 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Successful</title>
+    <title>Upload Preview</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
+    <div class="full-page-container upload-preview">
+        {% if file_ext in ['png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'] %}
+        <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image" class="media-item">
+        {% elif file_ext in ['mp4', 'mov', 'avi'] %}
+        <video controls class="media-item">
+            <source src="{{ url_for('uploaded_file', filename=filename) }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        {% endif %}
+    </div>
     <div class="container">
-        <h1>Upload Successful!</h1>
-        <div class="preview">
-            {% if filename.split('.')[-1] in ['png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'] %}
-            <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image">
-            {% elif filename.split('.')[-1] in ['mp4', 'mov', 'avi'] %}
-            <video controls>
-                <source src="{{ url_for('uploaded_file', filename=filename) }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            {% endif %}
-        </div>
-        <button onclick="window.location.href='/'">Go to Main Page</button>
-        <button onclick="window.location.href='/gallery'">View Gallery</button>
+        <button onclick="window.location.href='/'">Back to Home</button>
+        <button onclick="window.location.href='/gallery'">Go to Gallery</button>
     </div>
 </body>
 
