@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <div class="container">
-        <h1>Enter Password to View Gallery</h1>
-        <form method="POST" action="{{ url_for('gallery') }}">
-            <input type="password" name="password" placeholder="Password" required>
+        <h1>Enter Password to View the Gallery</h1>
+        <form action="/gallery_view" method="POST">
+            <input type="password" name="password" placeholder="Enter password" required>
             <button type="submit">Submit</button>
         </form>
     </div>

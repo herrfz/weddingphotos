@@ -4,25 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Photo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Welcome to Our Wedding Gallery</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <div class="container">
-        <div class="upload-card">
-            <h1>Upload Your Photo</h1>
-            <p>Select a photo to upload from your gallery or take a new one.</p>
-            <form method="POST" enctype="multipart/form-data">
-                <label for="file-upload" class="custom-file-upload">
-                    Upload Photo
-                </label>
-                <input id="file-upload" type="file" name="file" accept="image/*" capture="environment"
-                    onchange="this.form.submit();">
-            </form>
-        </div>
+        <h1>Welcome to Our Wedding Gallery</h1>
+        <button onclick="uploadFile()">Capture or Select Photo/Video</button>
     </div>
+
+    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data" style="display:none;">
+        <input type="file" name="file" id="fileInput" accept="image/*,video/*"
+            onchange="document.getElementById('uploadForm').submit();">
+    </form>
+
+    <script>
+        function uploadFile() {
+            document.getElementById('fileInput').click();
+        }
+    </script>
 </body>
 
 </html>

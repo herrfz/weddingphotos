@@ -4,19 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Uploaded</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <title>Upload Successful</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
     <div class="container">
-        <div class="upload-card">
-            <h1>Photo Uploaded Successfully</h1>
-            <img src="{{ url_for('static', filename=filename) }}" class="uploaded-image">
-            <a href="{{ url_for('gallery') }}" class="gallery-link">View Gallery</a>
-            <a href="{{ url_for('index') }}" class="back-link">Upload Another Photo</a>
+        <h1>Upload Successful!</h1>
+        <div class="preview">
+            {% if filename.split('.')[-1] in ['png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'] %}
+            <img src="{{ url_for('uploaded_file', filename=filename) }}" alt="Uploaded Image">
+            {% elif filename.split('.')[-1] in ['mp4', 'mov', 'avi'] %}
+            <video controls>
+                <source src="{{ url_for('uploaded_file', filename=filename) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            {% endif %}
         </div>
+        <button onclick="window.location.href='/'">Go to Main Page</button>
+        <button onclick="window.location.href='/gallery'">View Gallery</button>
     </div>
 </body>
 
