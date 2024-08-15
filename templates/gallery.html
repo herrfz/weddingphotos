@@ -9,83 +9,81 @@
 </head>
 
 <body>
-    <div class="gallery-container" onmouseover="showControls()" onmouseout="hideControls()">
-        <div class="slideshow-container">
-            {% for file in files %}
-            <div class="slide fade">
-                {% if file.split('.')[-1] in ['png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'] %}
-                <img src="{{ url_for('uploaded_file', filename=file) }}" style="width:100%">
-                {% elif file.split('.')[-1] in ['mp4', 'mov', 'avi'] %}
-                <video controls style="width:100%">
-                    <source src="{{ url_for('uploaded_file', filename=file) }}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-                {% endif %}
-            </div>
-            {% endfor %}
+    <div class="gallery-container">
+        <div class="swipe" id="swipeArea"></div>
 
-            <!-- Next and previous buttons -->
-            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
-            <a class="next" onclick="plusSlides(1)">&#10095;</a>
+        {% for file in files %}
+        <div class="media-item {% if loop.index == 1 %}active{% endif %}">
+            {% if file.split('.')[-1] in ['png', 'jpg', 'jpeg', 'gif', 'heic', 'heif'] %}
+            <img src="{{ url_for('uploaded_file', filename=file) }}" alt="image">
+            {% elif file.split('.')[-1] in ['mp4', 'mov', 'avi'] %}
+            <video controls>
+                <source src="{{ url_for('uploaded_file', filename=file) }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            {% endif %}
         </div>
-        <br>
-        <div class="dots-container">
-            {% for i in range(1, files|length + 1) %}
-            <span class="dot" onclick="currentSlide({{ i }})"></span>
-            {% endfor %}
-        </div>
+        {% endfor %}
     </div>
 
     <script>
-        let slideIndex = 0;
-        showSlides();
+        let currentIndex = 0;
+        const mediaItems = document.getElementsByClassName('media-item');
 
-        function plusSlides(n) {
-            slideIndex += n - 1;
-            showSlides();
+        function showMedia(index) {
+            mediaItems[currentIndex].classList.remove('active');
+            currentIndex = (index + mediaItems.length) % mediaItems.length;
+            mediaItems[currentIndex].classList.add('active');
         }
 
-        function currentSlide(n) {
-            slideIndex = n - 1;
-            showSlides();
-        }
-
-        function showSlides() {
-            let i;
-            let slides = document.getElementsByClassName("slide");
-            let dots = document.getElementsByClassName("dot");
-            for (i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none";
+        function handleSwipe(direction) {
+            if (direction === 'up') {
+                showMedia(currentIndex + 1);
+            } else if (direction === 'down') {
+                showMedia(currentIndex - 1);
+            } else if (direction === 'left') {
+                window.location.href = '/';
             }
-            slideIndex++;
-            if (slideIndex > slides.length) { slideIndex = 1 }
-            for (i = 0; i < dots.length; i++) {
-                dots[i].className = dots[i].className.replace(" active", "");
+        }
+
+        let touchstartY = 0;
+        let touchendY = 0;
+        let touchstartX = 0;
+        let touchendX = 0;
+
+        document.getElementById('swipeArea').addEventListener('touchstart', function (event) {
+            touchstartY = event.changedTouches[0].screenY;
+            touchstartX = event.changedTouches[0].screenX;
+        }, false);
+
+        document.getElementById('swipeArea').addEventListener('touchend', function (event) {
+            touchendY = event.changedTouches[0].screenY;
+            touchendX = event.changedTouches[0].screenX;
+            handleSwipeGesture();
+        }, false);
+
+        function handleSwipeGesture() {
+            let yDiff = touchstartY - touchendY;
+            let xDiff = touchstartX - touchendX;
+
+            if (Math.abs(yDiff) > Math.abs(xDiff)) {
+                if (yDiff > 0) {
+                    handleSwipe('up');
+                } else {
+                    handleSwipe('down');
+                }
+            } else {
+                if (xDiff > 0) {
+                    handleSwipe('left');
+                }
             }
-            slides[slideIndex - 1].style.display = "block";
-            dots[slideIndex - 1].className += " active";
-            setTimeout(showSlides, 7000); // Change image every 7 seconds
-        }
-
-        function showControls() {
-            let controls = document.querySelectorAll('.prev, .next, .dot');
-            controls.forEach(control => {
-                control.style.opacity = "1";
-            });
-        }
-
-        function hideControls() {
-            let controls = document.querySelectorAll('.prev, .next, .dot');
-            controls.forEach(control => {
-                control.style.opacity = "0";
-            });
         }
 
         document.addEventListener('keydown', function (event) {
-            if (event.key === 'ArrowLeft') {
-                plusSlides(-1);
-            } else if (event.key === 'ArrowRight') {
-                plusSlides(1);
+            if (event.key === 'ArrowUp') {
+                handleSwipe('up');
+            } else if (event.key === 'ArrowDown') {
+                handleSwipe('down');
             } else if (event.key === 'Escape') {
                 window.location.href = '/';
             }
