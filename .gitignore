@@ -1,4 +1,12 @@
-static/images/*
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.mov
+*.avi
+*.heic
+*.heif
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
