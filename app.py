@@ -1,63 +1,81 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.utils import secure_filename
+import sqlite3
 import os
-import datetime
+from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'
+app.secret_key = 'your_secret_key'
+UPLOAD_FOLDER = 'static/images/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov'}
 
-UPLOAD_FOLDER = 'static/images'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def get_db_connection():
+    conn = sqlite3.connect('db.sqlite')
+    conn.row_factory = sqlite3.Row
+    return conn
 
-@app.route('/upload', methods=['POST'])
-def upload_file():
+@app.route('/', defaults={'task_id': None})
+@app.route('/<int:task_id>')
+def index(task_id):
+    if task_id:
+        conn = get_db_connection()
+        task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
+        conn.close()
+        return render_template('index.html', task=task)
+    return render_template('index.html', task=None)
+
+@app.route('/upload/<int:task_id>', methods=['POST'])
+def upload(task_id):
     if 'file' not in request.files:
-        return redirect(request.url)
+        return redirect(url_for('index', task_id=task_id))
     file = request.files['file']
-    if file.filename == '':
-        return redirect(request.url)
-    if file and allowed_file(file.filename):
-        if not os.path.exists(app.config['UPLOAD_FOLDER']):
-            os.mkdir(app.config['UPLOAD_FOLDER'])
-        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        filename = f"{timestamp}_{file.filename}"
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        file_ext = filename.rsplit('.', 1)[1].lower()
-        return render_template('uploaded.html', filename=filename, file_ext=file_ext)
-    return redirect(url_for('index'))
+    if file.filename == '' or not allowed_file(file.filename):
+        return redirect(url_for('index', task_id=task_id))
+    
+    filename = secure_filename(file.filename)
+    if not os.path.exists(app.config['UPLOAD_FOLDER']):
+        os.mkdir(app.config['UPLOAD_FOLDER'])
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-@app.route('/gallery', methods=['GET', 'POST'])
+    conn = get_db_connection()
+    conn.execute('UPDATE tasks SET media = ?, taken = ? WHERE id = ?', 
+                 (filename, datetime.now(), task_id))
+    conn.commit()
+    conn.close()
+    
+    return render_template('uploaded.html', media_url=url_for('static', filename='images/' + filename))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form['password']
+        if password == 'your_password':
+            session['logged_in'] = True
+            return redirect(url_for('gallery'))
+        else:
+            return render_template('login.html', error='Incorrect password.')
+    return render_template('login.html')
+
+@app.route('/gallery')
 def gallery():
-    if 'authenticated' not in session:
-        if request.method == 'POST':
-            password = request.form['password']
-            if password == 'wedding2024':
-                session['authenticated'] = True
-                return redirect(url_for('gallery'))
-            else:
-                error = 'Invalid password, please try again.'
-                return render_template('login.html', error=error)
-        return render_template('login.html')
-
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
-    files = [f for f in files if allowed_file(f)]
-    return render_template('gallery.html', files=files)
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    media_files = conn.execute('SELECT media FROM tasks WHERE media IS NOT NULL').fetchall()
+    conn.close()
+    
+    return render_template('gallery.html', media_files=media_files)
 
 @app.route('/logout')
 def logout():
-    session.pop('authenticated', None)
+    session.pop('logged_in', None)
     return redirect(url_for('index'))
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return url_for('static', filename=f'images/{filename}')
 
 if __name__ == '__main__':
     app.run(debug=True)
