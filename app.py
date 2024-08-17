@@ -22,7 +22,7 @@ def get_db_connection():
 @app.route('/', defaults={'task_id': None})
 @app.route('/<int:task_id>')
 def index(task_id):
-    if task_id:
+    if task_id is not None and task_id != 1:
         conn = get_db_connection()
         task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
         conn.close()
@@ -38,13 +38,19 @@ def upload(task_id):
         return redirect(url_for('index', task_id=task_id))
     
     filename = secure_filename(file.filename)
+    date_taken = datetime.now()
+    filename = '_'.join([date_taken.strftime("%Y%m%d_%H%M%S"), filename])
     if not os.path.exists(app.config['UPLOAD_FOLDER']):
         os.mkdir(app.config['UPLOAD_FOLDER'])
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
     conn = get_db_connection()
-    conn.execute('UPDATE tasks SET media = ?, taken = ? WHERE id = ?', 
-                 (filename, datetime.now(), task_id))
+    if task_id == 1:
+        conn.execute('INSERT INTO tasks(media, taken) VALUES (?, ?)',
+                     (filename, date_taken))
+    else:
+        conn.execute('UPDATE tasks SET media = ?, taken = ? WHERE id = ?', 
+                    (filename, date_taken, task_id))
     conn.commit()
     conn.close()
     
