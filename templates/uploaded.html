@@ -4,17 +4,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Successful</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Uploaded</title>
 </head>
 
 <body>
     <div class="container">
-        <h2>Upload Successful!</h2>
-        <div class="media-preview">
-            <img src="{{ media_url }}" alt="Uploaded media" style="max-width: 100%;">
-        </div>
-        <a href="{{ url_for('gallery') }}"><button>View Gallery</button></a>
+        <h1>Media Uploaded!</h1>
+        {% if filepath.endswith(('png', 'jpg', 'jpeg', 'gif')) %}
+        <img src="{{ url_for('static', filename=filepath.split('static/')[-1]) }}" alt="Uploaded media">
+        {% elif filepath.endswith(('mp4', 'mov', 'avi')) %}
+        <video controls>
+            <source src="{{ url_for('static', filename=filepath.split('static/')[-1]) }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        {% endif %}
+        <a href="{{ url_for('gallery') }}">Go to Gallery</a>
     </div>
 </body>
 
