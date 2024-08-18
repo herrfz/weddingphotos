@@ -98,3 +98,12 @@ label {
     border-bottom: 1px solid #ddd;
     margin: 20px 0;
 }
+
+.preview img,
+.preview video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
