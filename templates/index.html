@@ -15,11 +15,11 @@
         {% else %}
         <h1>Take a photo or video!</h1>
         {% endif %}
-        <form action="{{ url_for('upload', task_id=task.id if task else 0) }}" method="post"
+        <form id="mediaForm" action="{{ url_for('upload', task_id=task.id if task else 0) }}" method="post"
             enctype="multipart/form-data">
-            <label for="media">Choose media</label>
-            <input type="file" name="media" id="media" accept="image/*,video/*" capture>
-            <button type="submit">Upload</button>
+            <label for="media" class="label-btn">Capture or Select Media</label>
+            <input type="file" name="media" id="media" accept="image/*,video/*" capture
+                onchange="document.getElementById('mediaForm').submit();">
         </form>
     </div>
 </body>

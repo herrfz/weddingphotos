@@ -83,11 +83,29 @@ def gallery():
 # Route to handle likes
 @app.route('/like/<int:task_id>', methods=['POST'])
 def like(task_id):
+    print(session)
+    if 'liked_tasks' not in session:
+        session['liked_tasks'] = []
+
     conn = get_db_connection()
-    conn.execute('UPDATE tasks SET likes = likes + 1 WHERE id = ?', (task_id,))
+    task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
+
+    if task_id in session['liked_tasks']:
+        # If the task is already liked, decrement the likes
+        conn.execute('UPDATE tasks SET likes = likes - 1 WHERE id = ?', (task_id,))
+        session['liked_tasks'].remove(task_id)
+        session.modified = True
+    else:
+        # If the task is not liked yet, increment the likes
+        conn.execute('UPDATE tasks SET likes = likes + 1 WHERE id = ?', (task_id,))
+        session['liked_tasks'].append(task_id)
+        session.modified = True
+
     conn.commit()
+    updated_task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
     conn.close()
-    return '', 204
+
+    return str(updated_task['likes'])
 
 if __name__ == '__main__':
     app.run(debug=True)
