@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
@@ -106,6 +106,12 @@ def like(task_id):
     conn.close()
 
     return str(updated_task['likes'])
+
+# allow downloading database
+@app.route('/download')
+def downloadFile ():
+    path = "db.sqlite"
+    return send_file(path, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
