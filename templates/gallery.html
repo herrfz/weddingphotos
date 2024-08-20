@@ -11,7 +11,7 @@
 
 <body>
     <div class="container">
-        <a href="{{ url_for('index') }}">Back to Home</a>
+        <a href="{{ url_for('index') }}" class="fixed-header">Back to Home</a>
         {% for task in tasks %}
         <div class="gallery-item">
             {% if task.media.lower().endswith(('png', 'jpg', 'jpeg', 'gif')) %}
