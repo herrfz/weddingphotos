@@ -15,7 +15,7 @@
             {% if filepath.lower().endswith(('png', 'jpg', 'jpeg', 'gif')) %}
             <img src="{{ url_for('static', filename=filepath.split('static/')[-1]) }}" alt="Uploaded Image">
             {% elif filepath.lower().endswith(('mp4', 'mov', 'avi')) %}
-            <video controls>
+            <video controls playsinline muted>
                 <source src="{{ url_for('static', filename=filepath.split('static/')[-1]) }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
