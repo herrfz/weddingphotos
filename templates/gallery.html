@@ -11,24 +11,28 @@
 
 <body>
     <div class="container">
-        <a href="{{ url_for('index') }}" class="fixed-header">Back to Home</a>
-        {% for task in tasks %}
+        <a href="{{ url_for('index') }}" class="fixed-header">Take more photos</a>
+        {% for item in media %}
         <div class="gallery-item">
-            {% if task.media.lower().endswith(('png', 'jpg', 'jpeg', 'gif')) %}
-            <img src="{{ url_for('static', filename=task.media.split('static/')[-1]) }}" alt="{{ task.description }}">
-            {% elif task.media.lower().endswith(('mp4', 'mov', 'avi')) %}
+            {% if item.media.lower().endswith(('png', 'jpg', 'jpeg', 'gif')) %}
+            <img src="{{ url_for('static', filename=item.media.split('static/')[-1]) }}">
+            {% elif item.media.lower().endswith(('mp4', 'mov', 'avi')) %}
             <video controls playsinline muted>
-                <source src="{{ url_for('static', filename=task.media.split('static/')[-1]) }}" type="video/mp4">
+                <source src="{{ url_for('static', filename=item.media.split('static/')[-1]) }}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
             {% endif %}
             <div class="description">
-                <p>{{ task.description }}</p>
-                <form action="{{ url_for('like', task_id=task.id) }}" method="post" class="like-form"
-                    hx-post="{{ url_for('like', task_id=task.id) }}" hx-trigger="click" hx-target="#likes-{{ task.id }}"
-                    hx-swap="innerHTML">
+                {% if item.description %}
+                <p>{{ item.description }}</p>
+                {% else %}
+                <p></p>
+                {% endif %}
+                <form action="{{ url_for('like', media_id=item.id) }}" method="post" class="like-form"
+                    hx-post="{{ url_for('like', media_id=item.id) }}" hx-trigger="click"
+                    hx-target="#likes-{{ item.id }}" hx-swap="innerHTML">
                     <button type="submit" class="like-button">
-                        ❤️ <span id="likes-{{ task.id }}" class="heart-icon">{{ task.likes }}</span>
+                        ❤️ <span id="likes-{{ item.id }}" class="heart-icon">{{ item.likes }}</span>
                     </button>
                 </form>
             </div>

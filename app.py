@@ -7,6 +7,8 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a strong secret key
 app.config['UPLOAD_FOLDER'] = 'static/images/'
+PASSWORD = '1234'
+event = 'oma'  # TODO: encode in URLs and QR code
 
 # Ensure the images directory exists
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -19,26 +21,26 @@ def get_db_connection():
     return conn
 
 # Route to handle the main index
-@app.route('/', defaults={'task_id': None})
-@app.route('/<int:task_id>')
-def index(task_id):
-    if task_id is not None and task_id != 0:
+@app.route('/', defaults={'user': None, 'task_id': None})
+@app.route('/<user>/<int:task_id>')
+def index(user, task_id):
+    if task_id is not None and task_id != 0 and user is not None:
         conn = get_db_connection()
         task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
         conn.close()
         if task:
-            return render_template('index.html', task=task)
+            return render_template('index.html', user=user, task=task)
     return render_template('index.html')
 
 # Route to handle file upload
-@app.route('/upload/<int:task_id>', methods=['POST'])
-def upload(task_id):
+@app.route('/upload/<user>/<int:task_id>', methods=['POST'])
+def upload(user, task_id):
     if 'media' not in request.files:
-        return redirect(url_for('index', task_id=task_id))
+        return redirect(url_for('index', user=user, task_id=task_id))
     
     file = request.files['media']
     if file.filename == '':
-        return redirect(url_for('index', task_id=task_id))
+        return redirect(url_for('index', user=user, task_id=task_id))
     
     if file:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -49,23 +51,21 @@ def upload(task_id):
         file.save(filepath)
         
         conn = get_db_connection()
-        if task_id == 0:
-            conn.execute('INSERT INTO tasks(media, taken) VALUES (?, ?)', (filepath, timestamp))
-        else:
-            conn.execute('UPDATE tasks SET media = ?, taken = ? WHERE id = ?', (filepath, timestamp, task_id))
+        conn.execute('''INSERT INTO media(task_id, media, user, taken, event) 
+                     VALUES (?, ?, ?, ?, ?)''', (task_id, filepath, user, timestamp, event))
         conn.commit()
         conn.close()
 
         return render_template('uploaded.html', filepath=filepath)
 
-    return redirect(url_for('index', task_id=task_id))
+    return redirect(url_for('index', user=user, task_id=task_id))
 
 # Route to handle gallery access
 @app.route('/gallery', methods=['GET', 'POST'])
 def gallery():
     if request.method == 'POST':
         password = request.form['password']
-        if password == 'your_password':  # Replace with a real password validation
+        if password == PASSWORD:  # Replace with a real password validation
             session['logged_in'] = True
             return redirect(url_for('gallery'))
         else:
@@ -75,34 +75,36 @@ def gallery():
         return render_template('login.html')
     
     conn = get_db_connection()
-    tasks = conn.execute('SELECT * FROM tasks WHERE media IS NOT NULL').fetchall()
+    media = conn.execute('''SELECT media.id, description, media, user, likes 
+                         FROM media LEFT JOIN tasks 
+                         ON media.task_id = tasks.id 
+                         WHERE media.event = ? AND media.media IS NOT NULL''', (event,)).fetchall()
     conn.close()
 
-    return render_template('gallery.html', tasks=tasks)
+    return render_template('gallery.html', media=media)
 
 # Route to handle likes
-@app.route('/like/<int:task_id>', methods=['POST'])
-def like(task_id):
-    print(session)
+@app.route('/like/<int:media_id>', methods=['POST'])
+def like(media_id):
     if 'liked_tasks' not in session:
         session['liked_tasks'] = []
 
     conn = get_db_connection()
-    task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
+    task = conn.execute('SELECT * FROM media WHERE id = ?', (media_id,)).fetchone()
 
-    if task_id in session['liked_tasks']:
+    if media_id in session['liked_tasks']:
         # If the task is already liked, decrement the likes
-        conn.execute('UPDATE tasks SET likes = likes - 1 WHERE id = ?', (task_id,))
-        session['liked_tasks'].remove(task_id)
+        conn.execute('UPDATE media SET likes = likes - 1 WHERE id = ?', (media_id,))
+        session['liked_tasks'].remove(media_id)
         session.modified = True
     else:
         # If the task is not liked yet, increment the likes
-        conn.execute('UPDATE tasks SET likes = likes + 1 WHERE id = ?', (task_id,))
-        session['liked_tasks'].append(task_id)
+        conn.execute('UPDATE media SET likes = likes + 1 WHERE id = ?', (media_id,))
+        session['liked_tasks'].append(media_id)
         session.modified = True
 
     conn.commit()
-    updated_task = conn.execute('SELECT * FROM tasks WHERE id = ?', (task_id,)).fetchone()
+    updated_task = conn.execute('SELECT * FROM media WHERE id = ?', (media_id,)).fetchone()
     conn.close()
 
     return str(updated_task['likes'])
