@@ -11,10 +11,6 @@ app.config['UPLOAD_FOLDER'] = 'static/images/'
 PASSWORD = '1234'
 event = 'oma'  # TODO: encode in URLs and QR code
 
-# Ensure the images directory exists
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
 # Utility function to get a database connection
 def get_db_connection():
     conn = sqlite3.connect('db.sqlite')
