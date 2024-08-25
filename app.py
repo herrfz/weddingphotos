@@ -3,6 +3,7 @@ import sqlite3
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime
+import shutil
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a strong secret key
@@ -110,10 +111,16 @@ def like(media_id):
     return str(updated_task['likes'])
 
 # allow downloading database
-@app.route('/download')
-def downloadFile ():
-    path = "db.sqlite"
-    return send_file(path, as_attachment=True)
+@app.route('/download', defaults={'images': None})
+@app.route('/download/<int:images>')
+def downloadFile (images):
+    dbpath = "db.sqlite"
+    mediapath = "media.zip"
+    if images == 0:
+        archive = shutil.make_archive(mediapath, 'zip', app.config['UPLOAD_FOLDER'])
+        return send_file(archive, as_attachment=True)
+    else:
+        return send_file(dbpath, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
