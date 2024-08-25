@@ -115,7 +115,7 @@ def like(media_id):
 @app.route('/download/<int:images>')
 def downloadFile (images):
     dbpath = "db.sqlite"
-    mediapath = "media.zip"
+    mediapath = "media"
     if images == 0:
         archive = shutil.make_archive(mediapath, 'zip', app.config['UPLOAD_FOLDER'])
         return send_file(archive, as_attachment=True)
