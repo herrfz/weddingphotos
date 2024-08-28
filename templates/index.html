@@ -15,7 +15,8 @@
         {% else %}
         <h1>Take a photo or video!</h1>
         {% endif %}
-        <form id="mediaForm" action="{{ url_for('upload', user=user if user else 0, task_id=task.id if task else 0) }}"
+        <form id="mediaForm"
+            action="{{ url_for('upload', username=username if user else 0, task_id=task.id if task else 0) }}"
             method="post" enctype="multipart/form-data">
             <label for="media" class="label-btn">Go</label>
             <input type="file" name="media" id="media" accept="image/*,video/*"

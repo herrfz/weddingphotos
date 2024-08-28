@@ -3,3 +3,5 @@ flask
 gunicorn
 python-docx
 segno
+psycopg2
+watchdog
