@@ -5,3 +5,4 @@ python-docx
 segno
 psycopg2
 watchdog
+python-dotenv
