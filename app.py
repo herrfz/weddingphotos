@@ -8,13 +8,16 @@ from backend.uploader import Uploader
 from psycopg2.extras import RealDictCursor
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
+load_dotenv()
 
 
 app = Flask(__name__)
-load_dotenv()
-
 app.secret_key = 'your_secret_key'  # Replace with a strong secret key
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
+
+with app.app_context():
+    Uploader(app.config['UPLOAD_FOLDER'], True).start()
+
 
 PASSWORD = os.getenv('PASSWORD')
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -131,7 +134,4 @@ def downloadFile():
     return send_file(archive, as_attachment=True)
 
 if __name__ == '__main__':
-    uploader = Uploader(app.config['UPLOAD_FOLDER'], True)
-    uploader.start()
-
     app.run(debug=True)
