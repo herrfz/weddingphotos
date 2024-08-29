@@ -3,6 +3,8 @@ import shutil
 import psycopg2
 from datetime import datetime
 from dotenv import load_dotenv
+from pathlib import PureWindowsPath
+from backend.uploader import Uploader
 from psycopg2.extras import RealDictCursor
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
@@ -12,7 +14,7 @@ app = Flask(__name__)
 load_dotenv()
 
 app.secret_key = 'your_secret_key'  # Replace with a strong secret key
-app.config['UPLOAD_FOLDER'] = 'static/images/'
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 
 PASSWORD = os.getenv('PASSWORD')
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -55,15 +57,16 @@ def upload(username, task_id):
         filename = secure_filename(f"{timestamp.strftime('%Y%m%d_%H%M%S')}_{file.filename}")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
+        posixfilepath = PureWindowsPath(filepath).as_posix()
         
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("INSERT INTO media(task_id, mediafile, username, taken, event) VALUES (%s, %s, %s, %s, %s)", 
-                    (task_id, filepath, username, timestamp, event))
+                    (task_id, posixfilepath, username, timestamp, event))
         conn.commit()
         conn.close()
 
-        return render_template('uploaded.html', filepath=filepath)
+        return render_template('uploaded.html', filepath=posixfilepath)
 
     return redirect(url_for('index', username=username, task_id=task_id))
 
@@ -128,4 +131,7 @@ def downloadFile():
     return send_file(archive, as_attachment=True)
 
 if __name__ == '__main__':
+    uploader = Uploader(app.config['UPLOAD_FOLDER'], True)
+    uploader.start()
+
     app.run(debug=True)
