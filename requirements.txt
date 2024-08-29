@@ -6,3 +6,4 @@ segno
 psycopg2
 watchdog
 python-dotenv
+cloudinary
