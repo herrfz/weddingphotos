@@ -10,18 +10,8 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 load_dotenv()
 
-
-def create_app():
-    app = Flask(__name__)
-    app.secret_key = 'your_secret_key'  # Replace with a strong secret key
-
-    with app.app_context():
-        app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
-        Uploader(app.config['UPLOAD_FOLDER'], True).start()
-
-    return app
-
-app = create_app()
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Replace with a strong secret key
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 
 PASSWORD = os.getenv('PASSWORD')
@@ -73,6 +63,9 @@ def upload(username, task_id):
                     (task_id, posixfilepath, username, timestamp, event))
         conn.commit()
         conn.close()
+
+        uploader = Uploader(filepath)
+        uploader.start()
 
         return render_template('uploaded.html', filepath=posixfilepath)
 
