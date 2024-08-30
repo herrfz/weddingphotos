@@ -23,7 +23,11 @@ class Backup(threading.Thread):
     def run(self):
         try:
             posixfilepath = PureWindowsPath(self.filepath).as_posix()
-            upload_result = cloudinary.uploader.upload(self.filepath)
+            if posixfilepath.lower().endswith(('png', 'jpg', 'jpeg', 'gif')):
+                resource_type = 'image'
+            elif posixfilepath.lower().endswith(('mp4', 'mov', 'avi')):
+                resource_type = 'video'
+            upload_result = cloudinary.uploader.upload(self.filepath, resource_type=resource_type)
 
             conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
             cur = conn.cursor()
@@ -59,4 +63,3 @@ async def restore(download_folder):
         tasks.append(asyncio.to_thread(_fetch, med['cloudurl'], med['mediafile']))
 
     await asyncio.gather(*tasks)
-    
