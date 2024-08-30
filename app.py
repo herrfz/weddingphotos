@@ -1,10 +1,11 @@
 import os
 import shutil
+import asyncio
 import psycopg2
 from datetime import datetime
 from dotenv import load_dotenv
 from pathlib import PureWindowsPath
-from backend.uploader import Uploader
+from backend.worker import Backup, restore
 from psycopg2.extras import RealDictCursor
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
@@ -16,13 +17,15 @@ app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
 
 PASSWORD = os.getenv('PASSWORD')
 DATABASE_URL = os.getenv('DATABASE_URL')
-
-event = 'oma'  # TODO: encode in URLs and QR code
+event = os.getenv('EVENT')
 
 # Utility function to get a database connection
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
+
+# Restore media on app restart
+asyncio.run(restore(app.config['UPLOAD_FOLDER']))
 
 # Route to handle the main index
 @app.route('/', defaults={'username': None, 'task_id': None})
@@ -64,8 +67,8 @@ def upload(username, task_id):
         conn.commit()
         conn.close()
 
-        uploader = Uploader(filepath)
-        uploader.start()
+        backup = Backup(filepath)
+        backup.start()
 
         return render_template('uploaded.html', filepath=posixfilepath)
 
