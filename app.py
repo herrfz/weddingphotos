@@ -11,13 +11,18 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 load_dotenv()
 
 
-app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Replace with a strong secret key
+def create_app():
+    app = Flask(__name__)
+    app.secret_key = 'your_secret_key'  # Replace with a strong secret key
+
+    with app.app_context():
+        app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
+        Uploader(app.config['UPLOAD_FOLDER'], True).start()
+
+    return app
+
+app = create_app()
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
-
-with app.app_context():
-    Uploader(app.config['UPLOAD_FOLDER'], True).start()
-
 
 PASSWORD = os.getenv('PASSWORD')
 DATABASE_URL = os.getenv('DATABASE_URL')
