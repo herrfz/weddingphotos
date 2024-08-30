@@ -18,21 +18,16 @@ class Uploader(threading.Thread):
         self.filepath = filepath
 
     def run(self):
-        while True:
-            try:
-                posixfilepath = PureWindowsPath(self.filepath).as_posix()
-                upload_result = cloudinary.uploader.upload(self.filepath)
+        try:
+            posixfilepath = PureWindowsPath(self.filepath).as_posix()
+            upload_result = cloudinary.uploader.upload(self.filepath)
 
-                conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-                cur = conn.cursor()
-                cur.execute('UPDATE media SET cloudurl = %s WHERE mediafile = %s',
-                             (upload_result['secure_url'], posixfilepath))
-                conn.commit()
-                conn.close()
+            conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+            cur = conn.cursor()
+            cur.execute('UPDATE media SET cloudurl = %s WHERE mediafile = %s',
+                            (upload_result['secure_url'], posixfilepath))
+            conn.commit()
+            conn.close()
 
-            except KeyboardInterrupt:
-                break
-
-            except Exception as e:
-                print(e)
-                continue
+        except Exception as e:
+            print(e)
