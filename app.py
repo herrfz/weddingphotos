@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 load_dotenv()
 
+
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Replace with a strong secret key
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'images')
@@ -19,13 +20,16 @@ PASSWORD = os.getenv('PASSWORD')
 DATABASE_URL = os.getenv('DATABASE_URL')
 event = os.getenv('EVENT')
 
+
 # Utility function to get a database connection
 def get_db_connection():
     conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
     return conn
 
+
 # Restore media on app restart
 asyncio.run(restore(app.config['UPLOAD_FOLDER']))
+
 
 # Route to handle the main index
 @app.route('/', defaults={'username': None, 'task_id': None})
@@ -40,6 +44,7 @@ def index(username, task_id):
         if task:
             return render_template('index.html', username=username, task=task)
     return render_template('index.html')
+
 
 # Route to handle file upload
 @app.route('/upload/<username>/<int:task_id>', methods=['POST'])
@@ -74,6 +79,7 @@ def upload(username, task_id):
 
     return redirect(url_for('index', username=username, task_id=task_id))
 
+
 # Route to handle gallery access
 @app.route('/gallery', methods=['GET', 'POST'])
 def gallery():
@@ -99,6 +105,7 @@ def gallery():
     conn.close()
 
     return render_template('gallery.html', media=media)
+
 
 # Route to handle likes
 @app.route('/like/<int:media_id>', methods=['POST'])
@@ -129,11 +136,6 @@ def like(media_id):
 
     return str(updated_task['likes'])
 
-# allow downloading database
-@app.route('/download')
-def downloadFile():
-    archive = shutil.make_archive("media", 'zip', app.config['UPLOAD_FOLDER'])
-    return send_file(archive, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
