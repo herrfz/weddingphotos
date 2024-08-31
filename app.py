@@ -90,10 +90,11 @@ def gallery():
     
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('''SELECT media.id, description, mediafile, username, likes 
+    cur.execute('''SELECT media.id, description, mediafile, username, likes, taken 
                 FROM media LEFT JOIN tasks
                 ON media.task_id = tasks.id
-                WHERE media.event = %s AND media.mediafile IS NOT NULL''', (event,))
+                WHERE media.event = %s AND media.mediafile IS NOT NULL
+                ORDER BY taken DESC''', (event,))
     media = cur.fetchall()
     conn.close()
 
