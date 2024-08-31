@@ -27,6 +27,8 @@ class Backup(threading.Thread):
                 resource_type = 'image'
             elif posixfilepath.lower().endswith(('mp4', 'mov', 'avi')):
                 resource_type = 'video'
+            else:
+                resource_type= 'auto'
             upload_result = cloudinary.uploader.upload(self.filepath, resource_type=resource_type)
 
             conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
@@ -41,9 +43,12 @@ class Backup(threading.Thread):
 
 
 def _fetch(url, save_as):
-    response = requests.get(url)
-    with open(save_as, 'wb') as file:
-        file.write(response.content)
+    try:
+        response = requests.get(url)
+        with open(save_as, 'wb') as file:
+            file.write(response.content)
+    except Exception as e:
+        print(e)
 
 
 async def restore(download_folder):
