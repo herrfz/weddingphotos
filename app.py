@@ -1,5 +1,4 @@
 import os
-import shutil
 import asyncio
 import psycopg2
 from datetime import datetime
@@ -8,7 +7,7 @@ from pathlib import PureWindowsPath
 from backend.worker import Backup, restore
 from psycopg2.extras import RealDictCursor
 from werkzeug.utils import secure_filename
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, session
 load_dotenv()
 
 
