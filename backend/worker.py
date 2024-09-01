@@ -10,7 +10,9 @@ from psycopg2.extras import RealDictCursor
 
 
 DATABASE_URL = os.getenv('DATABASE_URL')
-DROPBOX_ACCESS_TOKEN = os.getenv('DROPBOX_ACCESS_TOKEN')
+APP_KEY = os.getenv('APP_KEY')
+APP_SECRET = os.getenv('APP_SECRET')
+REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
 event = os.getenv('EVENT')
 
 
@@ -24,7 +26,9 @@ class Backup(threading.Thread):
             posixfilepath = PureWindowsPath(self.filepath).as_posix()
             dbxfilename = '/' + event + '/' + posixfilepath
             
-            dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+            dbx = dropbox.Dropbox(app_key=APP_KEY,
+                                  app_secret=APP_SECRET,
+                                  oauth2_refresh_token=REFRESH_TOKEN)
             with open(self.filepath, 'rb') as f:
                 dbx.files_upload(f.read(), dbxfilename)
 
@@ -41,7 +45,9 @@ class Backup(threading.Thread):
 
 def _fetch(url, save_as):
     try:
-        dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+        dbx = dropbox.Dropbox(app_key=APP_KEY,
+                              app_secret=APP_SECRET,
+                              oauth2_refresh_token=REFRESH_TOKEN)
         with open(save_as, 'wb') as file:
             _, response = dbx.files_download(url)
             file.write(response.content)
