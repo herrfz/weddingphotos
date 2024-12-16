@@ -1,15 +1,19 @@
-import sqlite3
-import segno
+import os
 import docx
+import segno
+import psycopg2
 from pathlib import Path
-from docx.enum.table import WD_ALIGN_VERTICAL
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=(Path(__file__).parents[1] / '.env'))
 from itertools import cycle
+from psycopg2.extras import RealDictCursor
+from docx.enum.table import WD_ALIGN_VERTICAL
 
 
-DBPATH = Path.cwd().parent / 'db.sqlite'
-EVENT = 'oma'
+DATABASE_URL = os.getenv('DATABASE_URL')
+event = os.getenv('EVENT')
 BASEURL = 'https://weddingphotos-243848a36014.herokuapp.com'
-DOCNAME = EVENT + '_tasks.docx'
+DOCNAME = event + '_tasks.docx'
 
 tasks = None
 users = None
@@ -18,23 +22,26 @@ table = doc.add_table(rows=0, cols=2)
 
 
 try:
-    with sqlite3.connect(DBPATH) as conn:
+    with psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor) as conn:
         cur = conn.cursor()
-        tasks = cur.execute('SELECT id, description FROM tasks WHERE event = ?', (EVENT,)).fetchall()
+        cur.execute('SELECT id, description FROM tasks WHERE event = %s', (event,))
+        tasks = cur.fetchall()
 
         cur = conn.cursor()
-        users = cur.execute('SELECT name FROM users').fetchall()
-except sqlite3.Error as e:
+        cur.execute('SELECT name FROM users')
+        users = cur.fetchall()
+
+except Exception as e:
     print(e)
 
 if users is not None and tasks is not None:
     for user, task in zip(users, cycle(tasks)):
-        taskid = str(task[0])
-        taskurl = '/'.join([BASEURL, user[0], taskid])
+        taskid = str(task['id'])
+        taskurl = '/'.join([BASEURL, user['name'], taskid])
         print(taskurl)
 
         qrcode = segno.make_qr(taskurl)
-        filename = user[0] + '_' + taskid + '.png'
+        filename = user['name'] + '_' + taskid + '.png'
         qrcode.save(filename, scale=3, border=3)
 
         cells = table.add_row().cells
@@ -44,6 +51,6 @@ if users is not None and tasks is not None:
         run.add_picture(filename)
         # add description to second column
         cells[1].vertical_alignment = WD_ALIGN_VERTICAL.CENTER
-        cells[1].text = user[0]
+        cells[1].text = task['description']
 
     doc.save(DOCNAME)
